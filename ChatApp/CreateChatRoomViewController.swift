@@ -13,8 +13,8 @@ class CreateChatRoomViewController: UIViewController {
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     @IBOutlet weak var chatRoomNameLabel: UITextField!
+   
     @IBAction func createButtonPressed(_ sender: Any) {
-        
         // Name is not left blank
         guard chatRoomNameLabel.text! != "" else{
             print("Room Name Not Valid")
@@ -30,5 +30,14 @@ class CreateChatRoomViewController: UIViewController {
         
         appDelegate.chatRoom = ChatRoom(roomId: chatRoomNameLabel.text! )
         performSegue(withIdentifier: "showChatRoom", sender: nil)
+    }
+    @IBAction func dismissButtonPressed(_ sender: Any) {
+        ForceRefresh.forceRefresh()
+        dismiss(animated: true, completion: nil)
+    }
+
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
     }
 }

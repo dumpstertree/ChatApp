@@ -13,27 +13,48 @@ import MultipeerConnectivity
 class ViewController: UIViewController {
    
     var roomList = [String]()
+    var blurEffectView: UIVisualEffectView?
     
     // Outlets
+    @IBOutlet weak var profilePicImageView: RoundImageView!
     @IBOutlet weak var tableView: UITableView!
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // Override
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         appDelegate.serviceManager.delegate = self
-        
-        appDelegate.serviceManager.mcSession.disconnect()
+        tableView.delegate = self
+        tableView.dataSource = self
+        ForceRefresh.delegates.append(self)
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        appDelegate.serviceManager.session.disconnect()
         appDelegate.serviceManager.stopAdvertising()
         appDelegate.serviceManager.startBrowsing()
         
-        tableView.delegate = self
-        tableView.dataSource = self
+        if Constants.UserInfo.ProfilePicture != nil{
+            profilePicImageView.image = Constants.UserInfo.ProfilePicture
+        }
+        
+        if let _ = blurEffectView{
+            blurEffectView!.removeFromSuperview()
+            blurEffectView = nil
+        }
     }
     
     // Actions
     @IBAction func createNewRoom( _ sender: AnyObject ) {
+        blurEffectView = UIVisualEffectView(effect: UIBlurEffect(style: UIBlurEffectStyle.regular))
+        
+        guard let blurEffectView = blurEffectView else{
+            return
+        }
+        
+        blurEffectView.frame = view.bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(blurEffectView)
+        
         performSegue(withIdentifier: "createChatRoom", sender: nil)
     }
     func joinExistingRoom( roomId: String ){
@@ -87,7 +108,17 @@ extension ViewController : UITableViewDelegate, UITableViewDataSource{
     }
 }
 
+extension ViewController : ForceRefreshProtocol {
+    func forceRefresh(){
+        if let _ = blurEffectView{
+            blurEffectView!.removeFromSuperview()
+            blurEffectView = nil
+        }
+    }
+}
+
 // ServiceManager Delegate
 protocol ServiceManagerDelegate {
     func roomListChanged()
 }
+

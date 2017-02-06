@@ -21,6 +21,7 @@ class ChatRoomViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var textView: UITextView!
     
+    
     // Override
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,11 +37,13 @@ class ChatRoomViewController: UIViewController {
         
         tableView.estimatedRowHeight = 100
         tableView.rowHeight = UITableViewAutomaticDimension
-        
+    }
+    override func viewWillAppear(_ animated: Bool) {
         appDelegate.serviceManager.stopBrowsing()
         appDelegate.serviceManager.connectWithPeers( withID: appDelegate.chatRoom.roomId )
         appDelegate.serviceManager.startAdvertising( roomId: appDelegate.chatRoom.roomId)
     }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "profileView"{
             
@@ -104,7 +107,6 @@ extension ChatRoomViewController : UITableViewDelegate, UITableViewDataSource{
         }
     }
 }
-
 extension ChatRoomViewController : UICollectionViewDelegate, UICollectionViewDataSource{
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int{

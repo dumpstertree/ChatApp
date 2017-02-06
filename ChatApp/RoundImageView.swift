@@ -7,6 +7,7 @@
 //
 
 import UIKit
+
 class RoundImageView:UIImageView {
     
     required init(coder aDecoder: NSCoder) {
@@ -14,5 +15,7 @@ class RoundImageView:UIImageView {
         
         self.layer.cornerRadius = frame.height/2
         self.layer.masksToBounds = true
+        self.layer.borderWidth = Constants.Visual.BorderWidth
+        self.layer.borderColor = UIColor.white.cgColor
     }
 }

@@ -20,7 +20,6 @@ class ServiceManager : NSObject {
     private let serviceAdvertiser : MCNearbyServiceAdvertiser
     private let serviceBrowser : MCNearbyServiceBrowser
     
-    var mcSession: MCSession!
     var mcAdvertiserAssistant: MCAdvertiserAssistant!
     
     var delegate : ServiceManagerDelegate?
@@ -39,13 +38,10 @@ class ServiceManager : NSObject {
         
         serviceAdvertiser.delegate = self
         serviceBrowser.delegate = self
-        
-        mcSession = MCSession(peer: myPeerId, securityIdentity: nil, encryptionPreference: .required)
-        mcSession.delegate = self
     }
     
     func startAdvertising( roomId: String ){
-        mcAdvertiserAssistant = MCAdvertiserAssistant.init(serviceType: serviceType, discoveryInfo: ["id": roomId ], session: mcSession)
+        mcAdvertiserAssistant = MCAdvertiserAssistant.init(serviceType: serviceType, discoveryInfo: ["id": roomId ], session: session)
         mcAdvertiserAssistant.start()
         serviceAdvertiser.startAdvertisingPeer()
     }
@@ -65,7 +61,7 @@ class ServiceManager : NSObject {
     func sendData( withProfile: Participant ){
         let data = NSKeyedArchiver.archivedData(withRootObject: withProfile)
         do {
-            try mcSession.send( data, toPeers: mcSession.connectedPeers, with: MCSessionSendDataMode.reliable)
+            try session.send( data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch{
         }
@@ -73,7 +69,7 @@ class ServiceManager : NSObject {
     func sendData( withMessage: Message ){
         let data = NSKeyedArchiver.archivedData(withRootObject: withMessage)
         do {
-            try mcSession.send( data, toPeers: mcSession.connectedPeers, with: MCSessionSendDataMode.reliable)
+            try session.send( data, toPeers: session.connectedPeers, with: MCSessionSendDataMode.reliable)
         }
         catch{
         }
@@ -85,7 +81,7 @@ class ServiceManager : NSObject {
         }
         
         for peer in peersWithID{
-            serviceBrowser.invitePeer(peer, to: mcSession, withContext: nil, timeout: 10)
+            serviceBrowser.invitePeer(peer, to: session, withContext: nil, timeout: 10)
         }
     }
 }
@@ -162,7 +158,7 @@ extension ServiceManager : MCSessionDelegate {
         case MCSessionState.connected:
             print("connected")
             appDelegate.chatRoom.sendParticipantInfo()
-            appDelegate.chatRoom.sendMessage( contents: "\(Constants.UserInfo.FirstName) \(Constants.UserInfo.LastName) joined the room", userID: "SYSTEM"  )
+            appDelegate.chatRoom.sendMessage( contents: "\(Constants.UserInfo.FirstName) joined the room", userID: "SYSTEM"  )
             break
         }
     }

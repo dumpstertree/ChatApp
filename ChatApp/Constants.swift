@@ -7,12 +7,19 @@
 //
 
 import Foundation
+import UIKit
 
 struct Constants{
     
+    struct Visual{
+        static let Red = (1,0,0,0)
+        static let BorderWidth: CGFloat = 3
+        static let CornerRadius: CGFloat = 10
+    }
+    
     struct UserInfo{
-        static let UserId = "User1"
-        static let FirstName = "John"
-        static let LastName = "Doe"
+        static var UserId: String!
+        static var FirstName: String!
+        static var ProfilePicture: UIImage! = UIImage(named: "logo")
     }    
 }
