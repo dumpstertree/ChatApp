@@ -10,4 +10,9 @@ import UIKit
 
 class SystemCell: UITableViewCell{
     @IBOutlet weak var contentsLabel: UILabel!
+   
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.selectionStyle = UITableViewCellSelectionStyle.none
+    }
 }

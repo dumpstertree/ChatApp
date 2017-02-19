@@ -11,7 +11,7 @@ import UIKit
 
 class ChatRoomTextBoxDelegate: NSObject, UITextViewDelegate {
     
-    let viewController: ChatRoomViewController?
+    let viewController: UIViewController?
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
@@ -27,11 +27,11 @@ class ChatRoomTextBoxDelegate: NSObject, UITextViewDelegate {
             textView.text = ""
             return false
         }
-        
+
         return true
     }
     
-    init( viewController: ChatRoomViewController ){
+    init( viewController: UIViewController ){
         self.viewController = viewController
     }
 }

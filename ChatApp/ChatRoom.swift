@@ -14,9 +14,8 @@ class ChatRoom{
     var roomId: String
     var participantList: [MCPeerID]
     
-    var messageLog   = [Message]()
-    var participants = [Participant]()
-    var participantList2 = [ String: Participant]()
+    var messageLog       = [Message]()
+    var participantList2 = [String:Participant]()
     
     var appDelegate: AppDelegate
     var delegate: chatRoomDelegate?
@@ -37,23 +36,39 @@ class ChatRoom{
     
     // Messaging
     func sendMessage( contents: String ){
-        sendMessage(contents: contents, userID: UIDevice.current.name)
+        sendMessage(contents: contents, userID: Constants.UserInfo.UserId)
     }
     func sendMessage( contents: String, userID: String ){
         let message = Message(contents: contents,userId: userID)
         messageLog.append(message)
         appDelegate.serviceManager.sendData(withMessage: message)
         delegate?.updateMessageList()
+        
+        AudioPlayer.play(source: AudioSource.MessageSent)
     }
     func recieveMessage(contents: String, userId: String){
         let message = Message(contents: contents,userId: userId)
         messageLog.append(message)
         delegate?.updateMessageList()
+        
+        AudioPlayer.play(source: AudioSource.MessageRecieved)
     }
     
     // Participant
     func sendParticipantInfo(){
-        let participant = Participant(firstName: "Zach", lastName: "Collins", userId: UIDevice.current.name)
+       
+        guard let name = Constants.UserInfo.FirstName else{
+            return
+        }
+        guard let userId = Constants.UserInfo.UserId else{
+            return
+        }
+        guard let profileImage = Constants.UserInfo.ProfilePicture else{
+            return
+        }
+        
+        let participant = Participant(firstName: name, userId: userId, profileImage: profileImage)
+        
         appDelegate.serviceManager.sendData(withProfile: participant)
         delegate?.updateParticipantList()
     }
@@ -61,65 +76,17 @@ class ChatRoom{
         participantList2[participant.userId] = participant
         delegate?.updateParticipantList()
     }
-    func removeParticipantInfo(){
+    func removeParticipantInfo( peerID: MCPeerID ){
+       
+        for(userID,participant) in participantList2{
+            if ( participant.userId == peerID.displayName ){
+                recieveMessage(contents: "\(participant.firstName) left the room", userId: "SYSTEM")
+                participantList2.removeValue(forKey: userID )
+                break;
+            }
+        }
+        
         delegate?.updateParticipantList()
-    }
-    func updateParticipantInfo(){
-        delegate?.updateParticipantList()
-    
-    }
-}
-
-
-class Message: NSObject, NSCoding{
-    
-    let time: String
-    let date: String
-    let contents: String
-    let userId: String
-    
-    init(contents: String, userId: String) {
-        self.time = ""
-        self.date = ""
-        self.contents = contents
-        self.userId = userId
-    }
-    
-    required init(coder decoder: NSCoder) {
-        self.time = decoder.decodeObject(forKey: "time") as? String ?? ""
-        self.date = decoder.decodeObject(forKey: "date") as? String ?? ""
-        self.contents = decoder.decodeObject(forKey: "contents") as? String ?? ""
-        self.userId = decoder.decodeObject(forKey: "userId") as? String ?? ""
-    }
-    func encode(with coder: NSCoder) {
-        coder.encode( time, forKey: "time" )
-        coder.encode( date, forKey: "date" )
-        coder.encode( contents, forKey: "contents" )
-        coder.encode( userId, forKey: "userId" )
-    }
-}
-class Participant: NSObject, NSCoding{
-    
-    let firstName: String
-    let lastName: String
-    let userId: String
-    // profilepic
-    
-    init(firstName: String, lastName: String, userId: String){
-        self.firstName = firstName
-        self.lastName = lastName
-        self.userId = userId
-    }
-    
-    required init(coder decoder: NSCoder) {
-        self.firstName = decoder.decodeObject(forKey: "firstName") as? String ?? ""
-        self.lastName = decoder.decodeObject(forKey: "lastName") as? String ?? ""
-        self.userId = decoder.decodeObject(forKey: "userId") as? String ?? ""
-    }
-    func encode(with coder: NSCoder) {
-        coder.encode( firstName, forKey: "firstName" )
-        coder.encode( lastName, forKey: "lastName" )
-        coder.encode( userId, forKey: "userId" )
     }
 }
 

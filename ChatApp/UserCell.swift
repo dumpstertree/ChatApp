@@ -12,4 +12,9 @@ import UIKit
 class UserCell: UITableViewCell{
     @IBOutlet weak var profilePictureImage: UIImageView!
     @IBOutlet weak var contentsLabel: UILabel!
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.selectionStyle = UITableViewCellSelectionStyle.none
+    }
 }

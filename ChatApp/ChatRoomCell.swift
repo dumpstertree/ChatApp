@@ -10,4 +10,10 @@ import UIKit
 
 class ChatRoomCell: UITableViewCell{
     @IBOutlet weak var contentsLabel: UILabel!
+    @IBOutlet weak var participantsLabel: UILabel!
+    
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.selectionStyle = UITableViewCellSelectionStyle.none
+    }
 }

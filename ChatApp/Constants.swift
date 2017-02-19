@@ -21,5 +21,10 @@ struct Constants{
         static var UserId: String!
         static var FirstName: String!
         static var ProfilePicture: UIImage! = UIImage(named: "logo")
+        static func logout(){
+            UserId = nil
+            FirstName = nil
+            ProfilePicture = nil
+        }
     }    
 }

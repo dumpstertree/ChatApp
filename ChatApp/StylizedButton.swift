@@ -20,4 +20,6 @@ class StylizedButton : UIButton {
         self.layer.borderWidth = Constants.Visual.BorderWidth
         self.layer.borderColor = UIColor.white.cgColor
     }
+    
+    
 }

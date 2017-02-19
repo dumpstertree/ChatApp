@@ -41,6 +41,7 @@ class ServiceManager : NSObject {
     }
     
     func startAdvertising( roomId: String ){
+        
         mcAdvertiserAssistant = MCAdvertiserAssistant.init(serviceType: serviceType, discoveryInfo: ["id": roomId ], session: session)
         mcAdvertiserAssistant.start()
         serviceAdvertiser.startAdvertisingPeer()
@@ -48,7 +49,9 @@ class ServiceManager : NSObject {
     func stopAdvertising(){
         if mcAdvertiserAssistant != nil{
             mcAdvertiserAssistant.stop()
+            mcAdvertiserAssistant = nil
         }
+        
         serviceAdvertiser.stopAdvertisingPeer()
     }
     func startBrowsing(){
@@ -75,7 +78,6 @@ class ServiceManager : NSObject {
         }
     }
     func connectWithPeers( withID: String ){
-        
         guard let peersWithID = nearbyPeers[withID] else{
             return
         }
@@ -84,12 +86,18 @@ class ServiceManager : NSObject {
             serviceBrowser.invitePeer(peer, to: session, withContext: nil, timeout: 10)
         }
     }
+    func disconnect(){
+    
+        if (session.connectedPeers.count != 0){
+            session.disconnect()
+        }
+        
+        stopAdvertising()
+    }
 }
-
 
 // Advertiser Delegate
 extension ServiceManager : MCNearbyServiceAdvertiserDelegate {
-    
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
     }
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID, withContext context: Data?, invitationHandler: @escaping ((Bool, MCSession?) -> Void)) {
@@ -99,10 +107,11 @@ extension ServiceManager : MCNearbyServiceAdvertiserDelegate {
 
 // Service Browser Delegate
 extension ServiceManager : MCNearbyServiceBrowserDelegate {
-    
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error){
     }
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?){
+        
+        print("found")
         
         guard let roomId = info?["id"]  else {
             return
@@ -123,6 +132,8 @@ extension ServiceManager : MCNearbyServiceBrowserDelegate {
     }
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID){
     
+        print("Peer Lost")
+        
         var i = 0
         for (key,value) in nearbyPeers {
             if value.contains(peerID){
@@ -132,14 +143,14 @@ extension ServiceManager : MCNearbyServiceBrowserDelegate {
                 peerList.remove(at: i)
                 if peerList == [MCPeerID](){
                     nearbyPeers.removeValue(forKey: key)
+                    break;
                 }
             }
             i += 1
         }
         
-        print(nearbyPeers)
-        
         // Alert View Controller
+        appDelegate.chatRoom.removeParticipantInfo(peerID: peerID)
         self.delegate?.roomListChanged()
     }
 }
@@ -158,28 +169,36 @@ extension ServiceManager : MCSessionDelegate {
         case MCSessionState.connected:
             print("connected")
             appDelegate.chatRoom.sendParticipantInfo()
-            appDelegate.chatRoom.sendMessage( contents: "\(Constants.UserInfo.FirstName) joined the room", userID: "SYSTEM"  )
+           
+            guard let name = Constants.UserInfo.FirstName else{
+                return
+            }
+            
+            appDelegate.chatRoom.sendMessage( contents: "\(name) joined the room", userID: "SYSTEM"  )
             break
         }
     }
     func session(_ session: MCSession, didReceive data: Data, fromPeer peerID: MCPeerID){
         
         if let message = NSKeyedUnarchiver.unarchiveObject(with: data) as? Message {
+            print( "MESSAGE" )
             appDelegate.chatRoom.recieveMessage(contents: message.contents, userId: message.userId)
             return
         }
         
         if let participant = NSKeyedUnarchiver.unarchiveObject(with: data) as? Participant {
+            print( "PARTICIPANT" )
             appDelegate.chatRoom.recieveParticipantInfo(participant: participant)
             return
         }
+        
+        print("FAILED TO UNWRAP")
     }
     func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
     }
     func session(_ session: MCSession, didFinishReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, at localURL: URL, withError error: Error?){
     }
     func session(_ session: MCSession, didStartReceivingResourceWithName resourceName: String, fromPeer peerID: MCPeerID, with progress: Progress) {
-        
     }
 }
 
@@ -193,6 +212,11 @@ extension MCSessionState {
         case .connected: return "Connected"
         }
     }
+}
+
+// ServiceManager Delegate
+protocol ServiceManagerDelegate {
+    func roomListChanged()
 }
 
 

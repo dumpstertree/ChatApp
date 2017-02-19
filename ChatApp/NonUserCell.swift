@@ -9,8 +9,9 @@
 import UIKit
 
 class NonUserCell: UITableViewCell{
-    @IBOutlet weak var profilePictureButton: RoundButtonView!
+    @IBOutlet weak var profilePictureButton: UIButton!
     @IBOutlet weak var contentsLabel: UILabel!
+    @IBOutlet weak var profilePictureImageView: UIImageView!
     var delegate: NonUserCellProtocol?
     var userId: String?
     
@@ -19,6 +20,11 @@ class NonUserCell: UITableViewCell{
             return
         }
         delegate?.profileImageClicked( userId: userId )
+    }
+   
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)!
+        self.selectionStyle = UITableViewCellSelectionStyle.none
     }
 }
 

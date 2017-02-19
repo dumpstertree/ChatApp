@@ -10,21 +10,35 @@ import UIKit
 
 class CreateChatRoomViewController: UIViewController {
 
+    // Instance Variables
     let appDelegate = UIApplication.shared.delegate as! AppDelegate
+    var textBoxDelegate: TextFieldDelegate!
     
+    // Outlets
     @IBOutlet weak var chatRoomNameLabel: UITextField!
-   
+    
+    // Overide
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        textBoxDelegate = TextFieldDelegate()
+        chatRoomNameLabel.delegate = textBoxDelegate
+    }
+    
+    // Actions
     @IBAction func createButtonPressed(_ sender: Any) {
+        
+        // Play Audio
+        AudioPlayer.play(source: AudioSource.ButtonClick)
+        
         // Name is not left blank
         guard chatRoomNameLabel.text! != "" else{
-            print("Room Name Not Valid")
-            // Display Error
+            AlertDisplay.display(alert: AlertMessages.InvalidRoomName, controller: self)
             return
         }
+       
         // No other room with the same name exists
         guard appDelegate.serviceManager.nearbyPeers[chatRoomNameLabel.text!] == nil else{
-            print("Room Name Already Exists")
-            // Dislay Error
+            AlertDisplay.display(alert: AlertMessages.AlreadyExistingRoom, controller: self)
             return
         }
         
@@ -32,12 +46,13 @@ class CreateChatRoomViewController: UIViewController {
         performSegue(withIdentifier: "showChatRoom", sender: nil)
     }
     @IBAction func dismissButtonPressed(_ sender: Any) {
+       
+        // Play Audio
+        AudioPlayer.play(source: AudioSource.ButtonClick)
+        
+        
+        // Segue
         ForceRefresh.forceRefresh()
         dismiss(animated: true, completion: nil)
-    }
-
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
     }
 }

@@ -12,40 +12,57 @@ import FBSDKCoreKit
 
 class LoginViewController: UIViewController {
 
+    // Outlets
     @IBOutlet weak var loginButton: StylizedButton!
     
+    // Override Functions
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-    
-    func getDataFromUrl(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
-        URLSession.shared.dataTask(with: url) { (data, response, error) in completion(data, response, error) }.resume()
-    }
-    
+  
+    // Actions
     @IBAction func skipButtonPressed(_ sender: Any) {
+       
+        // Play Audio
+        AudioPlayer.play(source: AudioSource.ButtonClick)
+        
+        // Create ANON Login Info
+        Constants.UserInfo.FirstName = "Anon"
+        Constants.UserInfo.UserId = UIDevice.current.name
+        
+        // Segue
         self.performSegue(withIdentifier: "login", sender: self)
     }
     @IBAction func loginButtonPressed(_ sender: Any) {
+        
+        // Play Audio
+        AudioPlayer.play(source: AudioSource.ButtonClick)
+        
+        // Attempt to Login with FB Class
         FBSDKLoginManager().logIn(withReadPermissions: ["email", "public_profile"], from: self) { (result, err) in
             if err != nil{
-                print(err!)
+                AlertDisplay.display(alert: AlertMessages.UnknownFBLoginError, controller: self)
                 return
             }
-            
             self.decryptToken()
         }
     }
     
+    // Private Functions
+    func getDataFromUrl(url: URL, completion: @escaping (_ data: Data?, _  response: URLResponse?, _ error: Error?) -> Void) {
+        URLSession.shared.dataTask(with: url) { (data, response, error) in completion(data, response, error) }.resume()
+    }
     func decryptToken(){
         
         FBSDKGraphRequest(graphPath: "/me", parameters: ["fields":"id, name, email"]).start{
             (connection, result, err) in
             
             if err != nil{
-                print(err!)
+                AlertDisplay.display(alert: AlertMessages.UnknownFBLoginError, controller: self)
             }
             
             guard let result = result as? [String: AnyObject] else{
+                AlertDisplay.display(alert: AlertMessages.UnknownFBLoginError, controller: self)
                 return
             }
             
@@ -58,10 +75,17 @@ class LoginViewController: UIViewController {
     }
     func storeID( result: [String:AnyObject]  ){
         guard let id = result["id"] as? String else{
-            print("Could not get userID")
+            AlertDisplay.display(alert: AlertMessages.UnknownFBLoginError, controller: self)
             return
         }
         Constants.UserInfo.UserId = id
+    }
+    func storeFirstName( result: [String:AnyObject] ){
+        guard let name = result["name"] as? String else{
+            AlertDisplay.display(alert: AlertMessages.UnknownFBLoginError, controller: self)
+            return
+        }
+        Constants.UserInfo.FirstName = name
     }
     func storeProfilePicture( result: [String:AnyObject], completion: @escaping () -> Void){
         
@@ -87,12 +111,5 @@ class LoginViewController: UIViewController {
             Constants.UserInfo.ProfilePicture = image
             completion()
         }
-    }
-    func storeFirstName( result: [String:AnyObject] ){
-        guard let name = result["name"] as? String else{
-            print("Could not get name")
-            return
-        }
-        Constants.UserInfo.FirstName = name
     }
 }

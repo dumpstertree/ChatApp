@@ -17,13 +17,21 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        guard let firstName = profile?.firstName, let lastName = profile?.lastName else{
+        guard let firstName = profile?.firstName, let profileImage = profile?.profileImage else{
             return
         }
-        nameLabel.text = "\(firstName) \(lastName)"
+        
+        nameLabel.text = firstName
+        profilePictureImage.image = profileImage
     }
     
     @IBAction func dismissButtonClicked(_ sender: Any) {
+       
+        // Play Audio
+        AudioPlayer.play(source: AudioSource.ButtonClick)
+        
+        // Segue
+        ForceRefresh.forceRefresh()
         dismiss(animated: true, completion: nil)
     }
 }
